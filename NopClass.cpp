@@ -19,6 +19,9 @@
  it will restore to original
 */
 
+#include <windows.h>
+#include <cstdint>
+
 class NopDetour
 {
 public:
