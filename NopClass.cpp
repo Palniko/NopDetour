@@ -25,7 +25,7 @@
 class NopDetour
 {
 public:
-    bool enabled = false;
+    bool status = false;
     uint8_t bytes;
     uintptr_t target;
     uintptr_t memory;
@@ -41,10 +41,10 @@ public:
         }
     }
 
-    void startNop() noexcept {
+    void start() noexcept {
         DWORD oldProtect;
         VirtualProtect(reinterpret_cast<void*>(target), bytes, PAGE_EXECUTE_READWRITE, &oldProtect);
-        enabled = true;
+        status = true;
         for (uint8_t i = 0; i < bytes; i++) {
             *reinterpret_cast<BYTE*>(target + i) = 0x90;
         }
@@ -53,10 +53,10 @@ public:
         return;
     }
 
-    void endNop() noexcept {
+    void end() noexcept {
         DWORD oldProtect;
         VirtualProtect(reinterpret_cast<void*>(target), bytes, PAGE_EXECUTE_READWRITE, &oldProtect);
-        enabled = false;
+        status = false;
         for (uint8_t i = 0; i < bytes; i++) {
             *reinterpret_cast<BYTE*>(target + i) = savedBytes[i];
         }
@@ -65,16 +65,16 @@ public:
         return;
     }
 
-    void toggleNop() noexcept {
-        if (enabled)
-            endNop();
+    void toggle() noexcept {
+        if (status)
+            end();
         else
-            startNop();
+            start();
         return;
     }
 
     ~NopDetour() noexcept {
-        endNop();
+        end();
         delete[] savedBytes;
     }
 };
